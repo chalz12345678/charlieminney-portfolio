@@ -3,13 +3,16 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import SectionLink from './SectionLink'
 
-const links = [
-  { href: '/#work', label: 'Projects' },
-  { href: '/#experience', label: 'Experience' },
-  { href: '/#about', label: 'About' },
+type Item = { label: string } & ({ id: string } | { href: string })
+
+const links: Item[] = [
+  { id: 'work', label: 'Projects' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'about', label: 'About' },
   { href: '/art/', label: 'Art' },
-  { href: '#contact', label: 'Contact' },
+  { id: 'contact', label: 'Contact' },
 ]
 
 export default function Nav() {
@@ -24,6 +27,29 @@ export default function Nav() {
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
+  const item = (l: Item, props: { className?: string; style?: React.CSSProperties; close?: boolean }) =>
+    'id' in l ? (
+      <SectionLink
+        key={l.label}
+        id={l.id}
+        className={props.className}
+        style={props.style}
+        onNavigate={props.close ? () => setOpen(false) : undefined}
+      >
+        {l.label}
+      </SectionLink>
+    ) : (
+      <Link
+        key={l.label}
+        href={l.href}
+        className={props.className}
+        style={props.style}
+        onClick={props.close ? () => setOpen(false) : undefined}
+      >
+        {l.label}
+      </Link>
+    )
+
   return (
     <header className="nav">
       <div className="wrap nav__row">
@@ -31,11 +57,7 @@ export default function Nav() {
           Charlie Minney
         </Link>
         <nav className="nav__links" aria-label="Main">
-          {links.map((l) => (
-            <Link key={l.label} href={l.href} className="link">
-              {l.label}
-            </Link>
-          ))}
+          {links.map((l) => item(l, { className: 'link' }))}
         </nav>
         <button
           className="nav__toggle"
@@ -48,16 +70,7 @@ export default function Nav() {
       </div>
       <div id="menu" className="menu" data-open={open} hidden={!open}>
         <nav className="wrap menu__links" aria-label="Mobile">
-          {links.map((l, i) => (
-            <Link
-              key={l.label}
-              href={l.href}
-              onClick={() => setOpen(false)}
-              style={{ '--i': i } as React.CSSProperties}
-            >
-              {l.label}
-            </Link>
-          ))}
+          {links.map((l, i) => item(l, { style: { '--i': i } as React.CSSProperties, close: true }))}
         </nav>
       </div>
     </header>

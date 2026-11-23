@@ -8,7 +8,6 @@
   --muted: #8d8a98;
   --accent: #a596db; /* muted purple splashes */
   --accent-deep: #7c3aed;
-  --accent-glow: rgb(124 58 237 / 0.18);
 
   --wrap: 1280px;
   --gutter: clamp(16px, 4vw, 48px);
@@ -316,52 +315,6 @@ ol {
   justify-items: start;
 }
 
-/* Purple light behind the name; drifts slowly and parallaxes on scroll */
-.hero__glow {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-}
-
-.blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  translate: 0 var(--py, 0);
-  will-change: translate, transform;
-}
-
-.blob--a {
-  width: min(62vw, 820px);
-  aspect-ratio: 1;
-  left: -12vw;
-  top: 8vh;
-  background: radial-gradient(circle at 40% 40%, rgb(124 58 237 / 0.28), rgb(124 58 237 / 0) 65%);
-  animation: float-a 18s var(--ease-in-out) infinite alternate;
-}
-
-.blob--b {
-  width: min(44vw, 560px);
-  aspect-ratio: 1;
-  right: -8vw;
-  bottom: -6vh;
-  background: radial-gradient(circle, rgb(192 132 252 / 0.14), rgb(192 132 252 / 0) 65%);
-  animation: float-b 22s var(--ease-in-out) infinite alternate;
-}
-
-@keyframes float-a {
-  to {
-    transform: translate(10vw, 6vh) scale(1.12);
-  }
-}
-
-@keyframes float-b {
-  to {
-    transform: translate(-8vw, -10vh) scale(0.9);
-  }
-}
-
 .hero__inner {
   display: flex;
   flex-direction: column;
@@ -438,7 +391,6 @@ ol {
   overflow: hidden;
   border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: 0 30px 80px -30px var(--accent-glow);
   outline: 1px solid var(--line);
   outline-offset: -1px;
 }
@@ -585,9 +537,7 @@ ol {
   min-height: min(76svh, 680px);
   border-radius: 20px;
   overflow: hidden;
-  background:
-    radial-gradient(120% 90% at 0% 0%, rgb(124 58 237 / 0.07), transparent 55%),
-    var(--surface);
+  background: var(--surface);
   border: 1px solid var(--line);
   box-shadow: 0 -20px 60px -30px rgb(0 0 0 / 0.9);
   transform-origin: 50% 0%;
@@ -672,9 +622,6 @@ ol {
 @media (hover: hover) and (pointer: fine) {
   .deck__card:hover {
     border-color: rgb(167 139 250 / 0.3);
-    box-shadow:
-      0 -20px 60px -30px rgb(0 0 0 / 0.9),
-      0 30px 90px -40px var(--accent-glow);
   }
   .deck__card:hover .deck__media img {
     transform: scale(1.03);
@@ -1223,7 +1170,6 @@ ol {
   }
   .back-arrow:hover > span:first-child {
     border-color: var(--accent);
-    background: rgb(124 58 237 / 0.18);
     transform: translateX(-3px);
   }
 }
@@ -1247,7 +1193,7 @@ ol {
 
 @media (hover: hover) {
   .skill:hover {
-    background: linear-gradient(160deg, rgb(124 58 237 / 0.06), transparent 70%);
+    background: var(--surface);
   }
 }
 
@@ -1255,20 +1201,6 @@ ol {
   position: relative;
   overflow: clip;
   isolation: isolate;
-}
-
-.contact__glow {
-  position: absolute;
-  z-index: -1;
-  width: min(80vw, 900px);
-  aspect-ratio: 1;
-  left: 50%;
-  top: 30%;
-  translate: -50% 0;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgb(124 58 237 / 0.12), transparent 62%);
-  filter: blur(40px);
-  pointer-events: none;
 }
 
 .contact__title > span {

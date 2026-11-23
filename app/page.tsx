@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Experience from '@/components/Experience'
 import ProjectDeck from '@/components/ProjectDeck'
+import SectionLink from '@/components/SectionLink'
 import { asset } from '@/lib/asset'
 import { experience, profile, projects, skills } from '@/lib/content'
 
@@ -14,10 +15,6 @@ export default function Home() {
   return (
     <>
       <section className="hero" data-enter>
-        <div className="hero__glow" aria-hidden="true">
-          <span className="blob blob--a" data-speed="0.25" />
-          <span className="blob blob--b" data-speed="-0.15" />
-        </div>
         <div className="wrap hero__inner">
           <div className="hero__top mono">
             <span style={i(0)}>{profile.role}</span>
@@ -50,9 +47,9 @@ export default function Home() {
               {profile.intro}
             </p>
             <div className="actions hero__actions" style={i(4)}>
-              <Link href="/#work" className="btn">
+              <SectionLink id="work" className="btn">
                 View projects
-              </Link>
+              </SectionLink>
               <a className="btn btn--ghost" href={profile.resume} target="_blank" rel="noreferrer">
                 Resume <span aria-hidden="true">↗</span>
               </a>

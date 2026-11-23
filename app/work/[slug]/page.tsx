@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import SectionLink from '@/components/SectionLink'
 import { asset } from '@/lib/asset'
 import { projects } from '@/lib/content'
 
@@ -35,10 +36,10 @@ export default async function ProjectPage({ params }: Props) {
   return (
     <article className="project">
       <header className="project__head wrap" data-enter>
-        <Link href="/#work" className="back-arrow" style={{ '--i': 0 } as React.CSSProperties}>
+        <SectionLink id="work" className="back-arrow" style={{ '--i': 0 } as React.CSSProperties}>
           <span aria-hidden="true">←</span>
           <span className="mono">All projects</span>
-        </Link>
+        </SectionLink>
         <p className="mono muted" style={{ '--i': 0 } as React.CSSProperties}>
           Project {pad(index + 1)} / {pad(projects.length)}
         </p>

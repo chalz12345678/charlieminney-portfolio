@@ -4,7 +4,6 @@ import CopyEmail from './CopyEmail'
 export default function Contact() {
   return (
     <footer id="contact" className="contact">
-      <div className="contact__glow" aria-hidden="true" />
       <div className="wrap">
         <p className="label">Contact</p>
         <h2 className="contact__title" data-reveal="text">
