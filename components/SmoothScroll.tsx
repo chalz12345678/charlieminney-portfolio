@@ -28,9 +28,15 @@ export default function SmoothScroll() {
   useEffect(() => {
     const l = lenis.current
     if (!l) return
-    const hash = window.location.hash
-    const target = hash ? document.querySelector<HTMLElement>(hash) : null
-    l.scrollTo(target ?? 0, { immediate: true, offset: target ? -72 : 0 })
+    // Lenis caches the previous page's height; re-measure after the new page paints,
+    // otherwise a jump to /#about from a short page gets clamped partway down.
+    const frame = requestAnimationFrame(() => {
+      l.resize()
+      const hash = window.location.hash
+      const target = hash ? document.querySelector<HTMLElement>(hash) : null
+      l.scrollTo(target ?? 0, { immediate: true, force: true, offset: target ? -72 : 0 })
+    })
+    return () => cancelAnimationFrame(frame)
   }, [pathname])
 
   return null
