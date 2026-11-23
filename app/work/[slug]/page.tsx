@@ -35,13 +35,17 @@ export default async function ProjectPage({ params }: Props) {
   return (
     <article className="project">
       <header className="project__head wrap" data-enter>
-        <Link href="/#work" className="link mono back" style={{ '--i': 0 } as React.CSSProperties}>
-          <span aria-hidden="true">←</span> All projects
+        <Link href="/#work" className="back-arrow" style={{ '--i': 0 } as React.CSSProperties}>
+          <span aria-hidden="true">←</span>
+          <span className="mono">All projects</span>
         </Link>
         <p className="mono muted" style={{ '--i': 0 } as React.CSSProperties}>
           Project {pad(index + 1)} / {pad(projects.length)}
         </p>
-        <h1 style={{ '--i': 1 } as React.CSSProperties}>{p.title}</h1>
+        <h1 style={{ '--i': 1 } as React.CSSProperties}>
+          {p.title}
+          <span className="accent">.</span>
+        </h1>
         <p className="project__summary" style={{ '--i': 2 } as React.CSSProperties}>
           {p.summary}
         </p>
@@ -56,15 +60,17 @@ export default async function ProjectPage({ params }: Props) {
       </header>
 
       <div className="wrap">
-        <div className="project__cover">
-          <img src={asset(p.cover.src)} alt={p.cover.alt} />
+        <div className="project__cover" data-reveal="image">
+          <img src={asset(p.cover.src)} alt={p.cover.alt} data-speed="0.08" />
         </div>
       </div>
 
       {p.overview && (
         <section className="block wrap">
           <h2 className="label">Overview</h2>
-          <p className="block__text">{p.overview}</p>
+          <p className="block__text" data-reveal="fade">
+            {p.overview}
+          </p>
         </section>
       )}
 
@@ -73,7 +79,7 @@ export default async function ProjectPage({ params }: Props) {
           <h2 className="label">Challenges &amp; solutions</h2>
           <ol className="pairs">
             {pairs.map(({ c, s }, i) => (
-              <li key={c.title} className="pair">
+              <li key={c.title} className="pair" data-reveal="fade">
                 <span className="mono muted">{pad(i + 1)}</span>
                 <div>
                   <p className="mono pair__kind">Challenge</p>
@@ -96,8 +102,8 @@ export default async function ProjectPage({ params }: Props) {
           <h2 className="label">Process</h2>
           <div className="gallery">
             {p.gallery.map((g) => (
-              <figure key={g.src}>
-                <div className="gallery__frame">
+              <figure key={g.src} data-reveal="fade">
+                <div className="gallery__frame" data-reveal="image">
                   <img src={asset(g.src)} alt={g.alt} loading="lazy" />
                 </div>
                 {g.caption && <figcaption>{g.caption}</figcaption>}

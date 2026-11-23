@@ -12,7 +12,13 @@ export default function Experience({ jobs }: { jobs: Job[] }) {
         const isOpen = open === i
         const id = `job-${i}`
         return (
-          <li key={job.company} className="job" data-open={isOpen}>
+          <li
+            key={job.company}
+            className="job"
+            data-open={isOpen}
+            data-reveal="fade"
+            style={{ '--i': i } as React.CSSProperties}
+          >
             <button
               className="job__head"
               aria-expanded={isOpen}

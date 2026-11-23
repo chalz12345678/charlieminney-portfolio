@@ -1,31 +1,41 @@
 import Link from 'next/link'
 import Experience from '@/components/Experience'
+import ProjectDeck from '@/components/ProjectDeck'
 import { asset } from '@/lib/asset'
 import { experience, profile, projects, skills } from '@/lib/content'
 
 const pad = (n: number) => String(n).padStart(2, '0')
+const i = (n: number) => ({ '--i': n }) as React.CSSProperties
 
 export default function Home() {
-  const current = experience[0]
   const featured = projects[0]
+  const [first, ...rest] = profile.name.split(' ')
 
   return (
     <>
       <section className="hero" data-enter>
+        <div className="hero__glow" aria-hidden="true">
+          <span className="blob blob--a" data-speed="0.25" />
+          <span className="blob blob--b" data-speed="-0.15" />
+        </div>
         <div className="wrap hero__inner">
           <div className="hero__top mono">
-            <span style={{ '--i': 0 } as React.CSSProperties}>{profile.role}</span>
-            <span style={{ '--i': 1 } as React.CSSProperties}>{profile.location}</span>
+            <span style={i(0)}>{profile.role}</span>
+            <span style={i(1)}>{profile.location}</span>
           </div>
           <div className="hero__mid">
-            <h1 className="hero__name" style={{ '--i': 1 } as React.CSSProperties}>
-              {profile.name}
+            <h1 className="hero__name" aria-label={profile.name}>
+              <span className="hero__line" data-drift="-1" aria-hidden="true">
+                <span style={i(1)}>{first}</span>
+              </span>
+              <span className="hero__line hero__line--indent" data-drift="1" aria-hidden="true">
+                <span style={i(2)}>
+                  {rest.join(' ')}
+                  <span className="accent">.</span>
+                </span>
+              </span>
             </h1>
-            <Link
-              href={`/work/${featured.slug}/`}
-              className="hero__feature"
-              style={{ '--i': 2 } as React.CSSProperties}
-            >
+            <Link href={`/work/${featured.slug}/`} className="hero__feature" style={i(3)} data-speed="-0.12">
               <div className="hero__feature-media">
                 <img src={asset(featured.cover.src)} alt={featured.cover.alt} />
               </div>
@@ -36,66 +46,46 @@ export default function Home() {
             </Link>
           </div>
           <div className="hero__foot">
-            <p className="hero__intro" style={{ '--i': 2 } as React.CSSProperties}>
+            <p className="hero__intro" style={i(3)}>
               {profile.intro}
             </p>
-            <div className="hero__side" style={{ '--i': 3 } as React.CSSProperties}>
-              <p className="hero__now">
-                <span className="dot" aria-hidden="true" />
-                <span>
-                  {current.role}, {current.company}
-                  <span className="muted"> · {current.years}</span>
-                </span>
-              </p>
-              <div className="actions">
-                <Link href="/#work" className="btn">
-                  View projects
-                </Link>
-                <a className="btn btn--ghost" href={profile.resume} target="_blank" rel="noreferrer">
-                  Resume <span aria-hidden="true">↗</span>
-                </a>
-              </div>
+            <div className="actions hero__actions" style={i(4)}>
+              <Link href="/#work" className="btn">
+                View projects
+              </Link>
+              <a className="btn btn--ghost" href={profile.resume} target="_blank" rel="noreferrer">
+                Resume <span aria-hidden="true">↗</span>
+              </a>
             </div>
           </div>
         </div>
+        <span className="scroll-cue mono" aria-hidden="true">
+          Scroll
+        </span>
       </section>
 
-      <section id="work" className="section">
+      <section id="work" className="section section--deck">
         <div className="wrap">
           <div className="section__head">
-            <h2>Projects</h2>
-            <span className="mono muted">{pad(projects.length)} builds</span>
+            <h2 data-reveal="text">
+              <span>
+                Projects<span className="accent">.</span>
+              </span>
+            </h2>
+            <span className="mono muted">{pad(projects.length)} builds · scroll to flip</span>
           </div>
-          <ul className="work">
-            {projects.map((p, i) => (
-              <li key={p.slug}>
-                <Link href={`/work/${p.slug}/`} className="card">
-                  <div className="card__media">
-                    <img src={asset(p.cover.src)} alt={p.cover.alt} loading={i < 2 ? 'eager' : 'lazy'} />
-                  </div>
-                  <div className="card__meta">
-                    <span className="mono muted">{pad(i + 1)}</span>
-                    <div>
-                      <h3 className="card__title">{p.title}</h3>
-                      <p className="card__summary">{p.summary}</p>
-                      <ul className="tags">
-                        {p.tags.map((t) => (
-                          <li key={t}>{t}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
         </div>
+        <ProjectDeck projects={projects} />
       </section>
 
       <section id="experience" className="section">
         <div className="wrap">
           <div className="section__head">
-            <h2>Experience</h2>
+            <h2 data-reveal="text">
+              <span>
+                Experience<span className="accent">.</span>
+              </span>
+            </h2>
             <span className="mono muted">2019 – now</span>
           </div>
           <Experience jobs={experience} />
@@ -105,12 +95,16 @@ export default function Home() {
       <section id="skills" className="section">
         <div className="wrap">
           <div className="section__head">
-            <h2>Skills</h2>
+            <h2 data-reveal="text">
+              <span>
+                Skills<span className="accent">.</span>
+              </span>
+            </h2>
           </div>
-          <ul className="skills">
-            {skills.map((s, i) => (
-              <li key={s.name} className="skill">
-                <span className="mono muted">{pad(i + 1)}</span>
+          <ul className="skills" data-reveal="stagger">
+            {skills.map((s, n) => (
+              <li key={s.name} className="skill" style={i(n)}>
+                <span className="mono skill__num">{pad(n + 1)}</span>
                 <h3>{s.name}</h3>
                 <p>{s.text}</p>
               </li>
@@ -121,13 +115,24 @@ export default function Home() {
 
       <section id="about" className="section">
         <div className="wrap about">
-          <div className="about__photo">
-            <img src={asset(profile.portrait)} alt="Charlie standing by a glacial lake with mountains behind" loading="lazy" />
+          <div className="about__photo" data-reveal="image">
+            <img
+              src={asset(profile.portrait)}
+              alt="Charlie standing by a glacial lake with mountains behind"
+              loading="lazy"
+              data-speed="-0.08"
+            />
           </div>
           <div className="about__text">
-            <h2>About me</h2>
+            <h2 data-reveal="text">
+              <span>
+                About me<span className="accent">.</span>
+              </span>
+            </h2>
             {profile.about.map((p) => (
-              <p key={p.slice(0, 20)}>{p}</p>
+              <p key={p.slice(0, 20)} data-reveal="fade">
+                {p}
+              </p>
             ))}
             <Link href="/art/" className="link about__art">
               See my artwork <span aria-hidden="true">→</span>

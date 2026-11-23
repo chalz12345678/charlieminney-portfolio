@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import Nav from '@/components/Nav'
 import Contact from '@/components/Contact'
 import SmoothScroll from '@/components/SmoothScroll'
+import ScrollFx from '@/components/ScrollFx'
 import { profile } from '@/lib/content'
 import './globals.css'
 
@@ -15,16 +16,26 @@ export const metadata: Metadata = {
   openGraph: { title: profile.name, description: profile.intro, type: 'website' },
 }
 
-export const viewport: Viewport = { themeColor: '#0a0a0a' }
+export const viewport: Viewport = { themeColor: '#09080c' }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+    <html lang="en" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Turn on scroll effects before first paint so revealed content doesn't flash. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('fx')",
+          }}
+        />
+      </head>
       <body>
         <a href="#main" className="skip">
           Skip to content
         </a>
         <SmoothScroll />
+        <ScrollFx />
         <Nav />
         <main id="main">{children}</main>
         <Contact />

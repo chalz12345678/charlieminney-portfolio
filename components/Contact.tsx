@@ -4,9 +4,12 @@ import CopyEmail from './CopyEmail'
 export default function Contact() {
   return (
     <footer id="contact" className="contact">
+      <div className="contact__glow" aria-hidden="true" />
       <div className="wrap">
         <p className="label">Contact</p>
-        <h2 className="contact__title">Get in touch</h2>
+        <h2 className="contact__title" data-reveal="text">
+          <span>Get in touch</span>
+        </h2>
         <a className="contact__email link" href={`mailto:${profile.email}`}>
           {profile.email}
         </a>
