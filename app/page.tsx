@@ -62,16 +62,6 @@ export default function Home() {
       </section>
 
       <section id="work" className="section section--deck">
-        <div className="wrap">
-          <div className="section__head">
-            <h2 data-reveal="text">
-              <span>
-                Projects<span className="accent">.</span>
-              </span>
-            </h2>
-            <span className="mono muted">{pad(projects.length)} builds · scroll to flip</span>
-          </div>
-        </div>
         <ProjectDeck projects={projects} />
       </section>
 

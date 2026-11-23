@@ -517,89 +517,128 @@ ol {
   letter-spacing: -0.04em;
 }
 
-/* ---------- Project deck (sticky stacking cards) ---------- */
-.deck {
-  display: grid;
-  gap: 8vh;
-  padding-bottom: 4vh;
+/* ---------- Projects rail (pinned, scrolls sideways) ---------- */
+.rail__track {
+  --x: 0px;
+  display: flex;
+  gap: clamp(16px, 2vw, 28px);
+  padding-left: var(--gutter);
+  padding-block: 8px 28px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+/* end spacer: flex rows drop trailing padding from their scroll width */
+.rail__track::after {
+  content: '';
+  flex: 0 0 1px;
+  margin-left: calc(var(--gutter) - 1px - clamp(16px, 2vw, 28px));
+}
+.rail__track::-webkit-scrollbar {
+  display: none;
 }
 
-.deck__slot {
+.rail--pinned .rail__sticky {
   position: sticky;
-  /* each card sticks a little lower so the stack's edges show */
-  top: calc(var(--nav-h) + 24px + var(--n) * 14px);
+  top: 0;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  padding-top: var(--nav-h);
+}
+.rail--pinned .rail__track {
+  overflow: visible;
+  transform: translate3d(var(--x), 0, 0);
+  will-change: transform;
 }
 
-.deck__card {
-  --covered: 0;
+.rail__card {
+  --off: 0;
+  --abs: 0;
+  flex: 0 0 clamp(240px, 22vw, 320px);
+  scroll-snap-align: start;
+}
+.rail--pinned .rail__card {
+  /* cards dip and settle as they travel past centre */
+  transform: translateY(calc(var(--abs) * 18px)) rotate(calc(var(--off) * 0.8deg));
+  opacity: calc(1 - var(--abs) * 0.25);
+}
+
+.rail__link {
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  min-height: min(76svh, 680px);
-  border-radius: 20px;
+  gap: 16px;
+}
+
+.rail__media {
+  position: relative;
+  aspect-ratio: 1 / 1.12;
+  border-radius: 14px;
   overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--line);
-  box-shadow: 0 -20px 60px -30px rgb(0 0 0 / 0.9);
-  transform-origin: 50% 0%;
-  transform: perspective(1400px) rotateX(calc(var(--covered) * 6deg))
-    scale(calc(1 - var(--covered) * 0.07));
-  filter: brightness(calc(1 - var(--covered) * 0.55));
-  transition:
-    border-color 300ms ease,
-    box-shadow 300ms ease;
 }
 
-.deck__info {
-  display: grid;
-  grid-template-rows: auto 1fr auto auto;
-  gap: 24px;
-  padding: clamp(24px, 3.5vw, 48px);
-}
-
-.deck__count {
-  font-size: 13px;
-}
-
-.deck__title {
-  font-size: clamp(30px, 3.4vw, 48px);
-  letter-spacing: -0.035em;
-  line-height: 1.02;
-  margin-bottom: 16px;
-}
-
-.deck__summary {
-  color: #bcb9c6;
-  font-size: 16px;
-  max-width: 44ch;
-}
-
-.deck__cta {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  justify-self: start;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--accent);
-}
-
-.deck__cta span {
-  transition: transform 300ms var(--ease-out);
-}
-
-.deck__media {
-  position: relative;
-  overflow: hidden;
-  background: #000;
-}
-
-.deck__media img {
+.rail__media img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 900ms var(--ease-out);
+  transform: translateX(calc(var(--off) * -4%)) scale(1.1);
+  transition: scale 700ms var(--ease-out);
+}
+
+.rail__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 24px;
+  background: rgb(0 0 0 / 0.62);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity 300ms var(--ease-out);
+}
+
+.rail__overlay p {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
+  transform: translateY(10px);
+  transition: transform 400ms var(--ease-out);
+}
+
+.rail__cta {
+  font-size: 12px;
+  color: var(--accent);
+  transform: translateY(10px);
+  transition: transform 400ms var(--ease-out) 40ms;
+}
+
+.rail__info {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.rail__count {
+  font-size: 12px;
+}
+
+.rail__title {
+  font-size: clamp(20px, 1.8vw, 26px);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.rail__summary {
+  display: none;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .tags {
@@ -620,38 +659,35 @@ ol {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .deck__card:hover {
-    border-color: rgb(167 139 250 / 0.3);
+  .rail__link:hover .rail__overlay,
+  .rail__link:focus-visible .rail__overlay {
+    opacity: 1;
   }
-  .deck__card:hover .deck__media img {
-    transform: scale(1.03);
+  .rail__link:hover .rail__overlay p,
+  .rail__link:hover .rail__cta {
+    transform: none;
   }
-  .deck__card:hover .deck__cta span {
-    transform: translateX(4px);
+  .rail__link:hover .rail__media img {
+    scale: 1.03;
+  }
+}
+
+/* touch screens can't hover: show the description under the title instead */
+@media (hover: none) {
+  .rail__overlay {
+    display: none;
+  }
+  .rail__summary {
+    display: block;
   }
 }
 
 @media (max-width: 860px) {
-  .deck {
-    gap: 4vh;
+  .rail__card {
+    flex-basis: 72vw;
   }
-  .deck__slot {
-    top: calc(var(--nav-h) + 12px + var(--n) * 8px);
-  }
-  .deck__card {
-    grid-template-columns: 1fr;
-    grid-template-rows: 42svh auto;
-    min-height: 0;
-  }
-  .deck__media {
-    order: -1;
-  }
-  .deck__info {
-    grid-template-rows: auto;
-    gap: 16px;
-  }
-  .deck__summary {
-    font-size: 15px;
+  .rail__media {
+    aspect-ratio: 4 / 4.4;
   }
 }
 
@@ -1293,4 +1329,8 @@ ol {
     animation: none !important;
     transition-duration: 0ms !important;
   }
+}
+
+.section--deck {
+  padding-top: 0;
 }
