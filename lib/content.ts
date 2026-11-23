@@ -319,8 +319,9 @@ export const experience: Job[] = [
     years: '2025 & 2026',
     location: 'Cambridge, MA',
     about:
-      'Notch Technologies develops novel, high-performance antenna technologies. I served as a mechanical engineer for two six month cycles, rapidly designing, manufacturing, and refining antenna housings, mounts, test fixtures, and proprietary materials.',
+      'Notch Technologies develops novel, high-performance antenna technologies.',
     points: [
+      'I served as a mechanical engineer for two six month cycles, rapidly designing, manufacturing, and refining antenna housings, mounts, test fixtures, and proprietary materials.',
       'I designed multi-part, fully parametric antenna and PCB enclosures to protect and obfuscate core IP.',
       'I applied a wide range of manufacturing processes, including 3D printing, casting, thermoforming, laser cutting, waterjet cutting, and screen printing.',
       'I led R&D on proprietary materials, developing new materials and fabrication processes through rigorous research, experimentation, and iteration, with a focus on scalability, repeatability, and cost.',
