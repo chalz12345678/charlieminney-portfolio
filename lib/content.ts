@@ -33,6 +33,10 @@ export type Project = {
   challenges?: Pair[]
   solutions?: Pair[]
   gallery: Image[]
+  // a second cover shown beside the first, for a card that holds two projects
+  cover2?: Image
+  // separate small projects grouped under one card, each with its own write-up
+  parts?: { title: string; text: string; gallery: Image[] }[]
   link?: { label: string; href: string }
 }
 
@@ -254,51 +258,38 @@ export const projects: Project[] = [
     ],
   },
   {
-    slug: 'transforming-shoes',
-    title: 'All Weather Transforming Shoes',
-    summary:
-      'Prototype shoes that would allow the wearer to transition from summer settings to winter settings which include bolt action ice gripping claws and an automatically shifting sole texture.',
-    tags: ['Mechanism design', 'Arduino', '3D printing'],
-    facts: [
-      { label: 'Mechanism', value: 'Bolt action ice claws' },
-      { label: 'Sole', value: 'Arduino powered texture shifter' },
-      { label: 'Process', value: 'Many printed iterations' },
-    ],
-    cover: img('transforming-shoes', '01.jpg', 'Boot standing on the transforming sole prototype'),
-    gallery: [
-      img('transforming-shoes', '02.jpg', 'SolidWorks assembly of the sole', 'Some of our initial CAD designs.'),
-      img(
-        'transforming-shoes',
-        '03.jpg',
-        '3D printed claw mechanism prototype',
-        'An initial 3D printed prototype for the claw mechanism. We had to go through multitudes of prototypes and iterations to settle on a design that we were happy with.'
-      ),
-      img(
-        'transforming-shoes',
-        '04.jpg',
-        'Assembled sole prototype with electronics',
-        'The assembled prototype for the shoe sole, featuring bolt action extendable ice claws and an Arduino powered sole texture shifter.'
-      ),
-    ],
-  },
-  {
     slug: '3d-printing',
-    title: 'Smaller 3D Printing and Design Projects',
-    summary: "This project goes over any smaller 3D printing pursuits that I'm proud of.",
+    title: 'Earring Rack & Mouse Shell',
+    summary:
+      'Two smaller design projects in one place: a 3D printed earring rack, and an ultralight mouse shell built around an existing mouse PCB.',
     tags: ['SolidWorks', 'Rendering', '3D printing'],
     facts: [
-      { label: 'Earring rack', value: 'Designed, rendered, printed' },
-      { label: 'Mouse shell', value: 'Fits HyperX Pulsefire Haste PCB' },
+      { label: 'Contains', value: '2 small projects' },
+      { label: 'A · Earring rack', value: 'Designed, rendered, printed' },
+      { label: 'B · Mouse shell', value: 'Fits HyperX Pulsefire Haste PCB' },
     ],
     cover: img('3d-printing', '01.jpg', 'Render of a pink earring rack'),
-    overview:
-      'I designed, rendered, and 3D printed a small closet rack for earrings. I also designed a super light mouse shell that attaches to an existing mouse PCB (HyperX Pulsefire Haste), complete with contoured finger rests and a reusable snap in place design.',
-    gallery: [
-      img('3d-printing', '02.jpg', 'Render of the earring rack in black', 'A SolidWorks render that shows what it would look like in a different color palette.'),
-      img('3d-printing', '03.jpg', 'Printed earring rack in use', 'The final, assembled product in use.'),
-      img('3d-printing', '04.jpg', 'Mouse shell iterations side by side', 'The many design iterations of the mouse shell, side by side.'),
-      img('3d-printing', '05.jpg', 'SolidWorks model of the mouse shell', 'The SolidWorks 3D model.'),
-      img('3d-printing', '06.jpg', 'Assembled lightweight mouse', 'The final, assembled mouse.'),
+    cover2: img('3d-printing', '06.jpg', 'Assembled lightweight mouse'),
+    gallery: [],
+    parts: [
+      {
+        title: 'Earring Rack',
+        text: 'I designed, rendered, and 3D printed a small closet rack for earrings.',
+        gallery: [
+          img('3d-printing', '01.jpg', 'Render of a pink earring rack', 'The SolidWorks render of the rack.'),
+          img('3d-printing', '02.jpg', 'Render of the earring rack in black', 'A SolidWorks render that shows what it would look like in a different color palette.'),
+          img('3d-printing', '03.jpg', 'Printed earring rack in use', 'The final, assembled product in use.'),
+        ],
+      },
+      {
+        title: 'Mouse Shell',
+        text: 'I designed a super light mouse shell that attaches to an existing mouse PCB (HyperX Pulsefire Haste), complete with contoured finger rests and a reusable snap in place design.',
+        gallery: [
+          img('3d-printing', '04.jpg', 'Mouse shell iterations side by side', 'The many design iterations of the mouse shell, side by side.'),
+          img('3d-printing', '05.jpg', 'SolidWorks model of the mouse shell', 'The SolidWorks 3D model.'),
+          img('3d-printing', '06.jpg', 'Assembled lightweight mouse', 'The final, assembled mouse.'),
+        ],
+      },
     ],
   },
 ]

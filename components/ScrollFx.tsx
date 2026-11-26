@@ -29,7 +29,11 @@ export default function ScrollFx() {
       },
       { rootMargin: '0px 0px -12% 0px', threshold: 0.05 }
     )
-    document.querySelectorAll('[data-reveal]:not(.is-in)').forEach((el) => io.observe(el))
+    // project pages show everything at once, no scroll reveals
+    const still = pathname.startsWith('/work/')
+    document
+      .querySelectorAll('[data-reveal]:not(.is-in)')
+      .forEach((el) => (still ? el.classList.add('is-in') : io.observe(el)))
 
     const speeds = [...document.querySelectorAll<HTMLElement>('[data-speed]')]
     const drifts = [...document.querySelectorAll<HTMLElement>('[data-drift]')]
