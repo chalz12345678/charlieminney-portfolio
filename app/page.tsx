@@ -9,7 +9,6 @@ const pad = (n: number) => String(n).padStart(2, '0')
 const i = (n: number) => ({ '--i': n }) as React.CSSProperties
 
 export default function Home() {
-  const featured = projects[0]
   const [first, ...rest] = profile.name.split(' ')
 
   return (
@@ -28,19 +27,9 @@ export default function Home() {
               <span className="hero__line hero__line--indent" data-drift="1" aria-hidden="true">
                 <span style={i(2)}>
                   {rest.join(' ')}
-                  <span className="accent">.</span>
                 </span>
               </span>
             </h1>
-            <Link href={`/work/${featured.slug}/`} className="hero__feature" style={i(3)} data-speed="-0.12">
-              <div className="hero__feature-media">
-                <img src={asset(featured.cover.src)} alt={featured.cover.alt} />
-              </div>
-              <span className="mono hero__feature-label">
-                <span className="muted">Featured</span>
-                <span>{featured.title} →</span>
-              </span>
-            </Link>
           </div>
           <div className="hero__foot">
             <p className="hero__intro" style={i(3)}>

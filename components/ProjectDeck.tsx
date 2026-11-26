@@ -7,8 +7,13 @@ import type { Project } from '@/lib/content'
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
-// A row of cards pinned to the screen: scrolling down slides the row sideways.
-// Each card lifts toward the centre and its photo drifts slightly against the motion.
+// Cards start stacked like a deck in the middle of the screen. Scrolling down
+// deals them out one by one into a row, then slides the row sideways.
+const ease = (t: number) => 1 - Math.pow(1 - t, 3)
+const clamp = (t: number) => Math.min(1, Math.max(0, t))
+// slight, fixed tilt per card so the stack's edges show
+const tilt = [-2.5, 3, -4, 2, -1.5, 4.5, -3, 1]
+
 export default function ProjectDeck({ projects }: { projects: Project[] }) {
   const root = useRef<HTMLDivElement>(null)
   const track = useRef<HTMLOListElement>(null)
@@ -20,27 +25,38 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     el.classList.add('rail--pinned')
     const cards = [...row.querySelectorAll<HTMLElement>('.rail__card')]
-    let distance = 0
+    const n = cards.length
+    const stagger = 0.28 // how far apart each card is dealt
+    let deal = 0 // scroll distance spent dealing the stack
+    let slide = 0 // scroll distance spent sliding the row
+    let home: number[] = [] // how far each card sits from the stack centre
     let frame = 0
 
     const measure = () => {
-      distance = Math.max(0, row.scrollWidth - row.clientWidth)
-      el.style.height = `${window.innerHeight + distance}px`
+      const vw = window.innerWidth
+      home = cards.map((c, i) => vw / 2 - c.offsetWidth / 2 - c.offsetLeft + (i - (n - 1) / 2) * 6)
+      slide = Math.max(0, row.scrollWidth - row.clientWidth)
+      deal = window.innerHeight * 1.1
+      el.style.height = `${window.innerHeight + deal + slide}px`
       update()
     }
 
     const update = () => {
       frame = 0
-      const top = el.getBoundingClientRect().top
-      const p = distance ? Math.min(1, Math.max(0, -top / distance)) : 0
-      row.style.setProperty('--x', `${(-p * distance).toFixed(1)}px`)
+      const scrolled = -el.getBoundingClientRect().top
+      const d = clamp(scrolled / deal)
+      const x = -clamp((scrolled - deal) / (slide || 1)) * slide
+      row.style.setProperty('--x', `${x.toFixed(1)}px`)
       const mid = window.innerWidth / 2
-      cards.forEach((card) => {
-        const r = card.getBoundingClientRect()
-        // -1 when a card sits a full screen-half left of centre, +1 to the right
-        const off = Math.max(-1, Math.min(1, (r.left + r.width / 2 - mid) / mid))
-        card.style.setProperty('--off', off.toFixed(4))
-        card.style.setProperty('--abs', Math.abs(off).toFixed(4))
+      cards.forEach((card, i) => {
+        // top card (01) leaves first, the rest follow
+        const e = ease(clamp(d * (1 + stagger * (n - 1)) - stagger * i))
+        const left = 1 - e
+        card.style.setProperty('--tx', `${(home[i] * left).toFixed(1)}px`)
+        card.style.setProperty('--rot', `${(tilt[i % tilt.length] * left).toFixed(2)}deg`)
+        card.style.setProperty('--lift', `${(Math.sin(e * Math.PI) * -28).toFixed(1)}px`)
+        const centre = card.offsetLeft + x + home[i] * left + card.offsetWidth / 2
+        card.style.setProperty('--off', Math.max(-1, Math.min(1, (centre - mid) / mid)).toFixed(4))
       })
     }
 
@@ -69,12 +85,12 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
                 Projects<span className="accent">.</span>
               </span>
             </h2>
-            <span className="mono muted">{pad(projects.length)} builds · scroll to browse</span>
+            <span className="mono muted">{pad(projects.length)} builds · scroll to deal</span>
           </div>
         </div>
         <ol className="rail__track" ref={track}>
           {projects.map((p, n) => (
-            <li key={p.slug} className="rail__card">
+            <li key={p.slug} className="rail__card" style={{ zIndex: projects.length - n }}>
               <Link href={`/work/${p.slug}/`} className="rail__link">
                 <div className="rail__media">
                   <img src={asset(p.cover.src)} alt={p.cover.alt} loading={n < 3 ? 'eager' : 'lazy'} />

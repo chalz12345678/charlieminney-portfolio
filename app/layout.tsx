@@ -4,7 +4,8 @@ import Nav from '@/components/Nav'
 import Contact from '@/components/Contact'
 import SmoothScroll from '@/components/SmoothScroll'
 import ScrollFx from '@/components/ScrollFx'
-import { profile } from '@/lib/content'
+import { asset } from '@/lib/asset'
+import { profile, projects } from '@/lib/content'
 import './globals.css'
 
 const sans = Geist({ subsets: ['latin'], variable: '--font-sans' })
@@ -31,6 +32,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        {/* first project's photo, heavily darkened, behind the whole site */}
+        <div
+          className="backdrop"
+          aria-hidden="true"
+          style={{ backgroundImage: `url(${asset(projects[0].cover.src)})` }}
+        />
         <a href="#main" className="skip">
           Skip to content
         </a>
