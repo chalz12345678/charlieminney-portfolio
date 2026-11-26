@@ -671,33 +671,6 @@ ol {
   transition: scale 700ms var(--ease-out);
 }
 
-.rail__split {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2px;
-}
-
-.rail__split > div {
-  position: relative;
-  overflow: hidden;
-}
-
-.rail__part {
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgb(0 0 0 / 0.6);
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--ink);
-}
-
 .rail__overlay {
   position: absolute;
   inset: 0;

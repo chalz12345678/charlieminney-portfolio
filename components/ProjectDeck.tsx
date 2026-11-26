@@ -92,20 +92,7 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
             <li key={p.slug} className="rail__card" style={{ zIndex: projects.length - n }}>
               <Link href={`/work/${p.slug}/`} className="rail__link">
                 <div className="rail__media">
-                  {p.cover2 ? (
-                    <div className="rail__split">
-                      {[p.cover, p.cover2].map((c, k) => (
-                        <div key={c.src}>
-                          <img src={asset(c.src)} alt={c.alt} loading="lazy" />
-                          <span className="mono rail__part">
-                            {String.fromCharCode(65 + k)} · {p.parts?.[k]?.title}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <img src={asset(p.cover.src)} alt={p.cover.alt} loading={n < 3 ? 'eager' : 'lazy'} />
-                  )}
+                  <img src={asset(p.cover.src)} alt={p.cover.alt} loading={n < 3 ? 'eager' : 'lazy'} />
                   <div className="rail__overlay">
                     <p>{p.summary}</p>
                     <span className="rail__cta mono">

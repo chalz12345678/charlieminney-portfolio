@@ -259,7 +259,7 @@ export const projects: Project[] = [
   },
   {
     slug: '3d-printing',
-    title: 'Earring Rack & Mouse Shell',
+    title: 'Smaller Design and 3D Printing Projects',
     summary:
       'Two smaller design projects in one place: a 3D printed earring rack, and an ultralight mouse shell built around an existing mouse PCB.',
     tags: ['SolidWorks', 'Rendering', '3D printing'],
