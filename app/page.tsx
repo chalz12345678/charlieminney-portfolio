@@ -45,9 +45,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <span className="scroll-cue mono" aria-hidden="true">
-          Scroll
-        </span>
       </section>
 
       <section id="work" className="section section--deck">

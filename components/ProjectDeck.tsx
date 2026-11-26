@@ -85,7 +85,6 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
                 Projects<span className="accent">.</span>
               </span>
             </h2>
-            <span className="mono muted">{pad(projects.length)} builds · scroll to deal</span>
           </div>
         </div>
         <ol className="rail__track" ref={track}>
