@@ -74,7 +74,7 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       if (to === Math.round(scrolled() / step) && Math.abs(scrolled() / step - to) < 0.02) return
       const target = el.getBoundingClientRect().top + window.scrollY + to * step
       const dist = Math.abs(to - scrolled() / step)
-      const duration = Math.min(1.7, 1 + dist * 0.15) // longer for longer trips
+      const duration = Math.min(1.2, 0.5 + dist * 0.15) // longer for longer trips
       // remember where we're headed so the settle-on-nearest snap can't hijack the glide
       heading = to
       clearTimeout(headingTimer)
