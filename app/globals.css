@@ -593,150 +593,184 @@ ol {
   letter-spacing: -0.04em;
 }
 
-/* ---------- Projects rail (pinned, scrolls sideways) ---------- */
-.rail {
+/* ---------- Projects coverflow (pinned, scroll moves through cards) ---------- */
+.flow {
   position: relative;
 }
 
-.rail__mark {
+/* "View projects" lands here: the first scroll position where the section is pinned */
+.flow__mark {
   position: absolute;
-  top: 0;
+  top: 72px;
   left: 0;
 }
 
-.rail__track {
-  --x: 0px;
-  display: flex;
-  gap: clamp(16px, 2vw, 28px);
-  padding-left: var(--gutter);
-  padding-block: 8px 28px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-}
-/* end spacer: flex rows drop trailing padding from their scroll width */
-.rail__track::after {
-  content: '';
-  flex: 0 0 1px;
-  margin-left: calc(var(--gutter) - 1px - clamp(16px, 2vw, 28px));
-}
-.rail__track::-webkit-scrollbar {
-  display: none;
-}
-
-.rail--pinned .rail__sticky {
+.flow__sticky {
   position: sticky;
   top: 0;
   height: 100svh;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  overflow: hidden;
   padding-top: var(--nav-h);
-}
-.rail--pinned .rail__track {
-  overflow: visible;
-  transform: translate3d(var(--x), 0, 0);
-  will-change: transform;
-}
-
-.rail__card {
-  --off: 0;
-  position: relative;
-  flex: 0 0 clamp(280px, 27vw, 400px);
-  scroll-snap-align: start;
-}
-.rail--pinned .rail__card {
-  transform: translate3d(var(--tx, 0), var(--lift, 0), 0) rotate(var(--rot, 0));
-  will-change: transform;
-}
-
-.rail__link {
-  display: grid;
-  gap: 14px;
-  height: 100%;
-  padding: 12px 12px 18px;
-  border-radius: 20px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  box-shadow: 0 24px 60px -24px rgb(0 0 0 / 0.8);
-  transition: border-color 300ms ease;
-}
-
-.rail__media {
-  position: relative;
-  aspect-ratio: 1 / 1.12;
-  border-radius: 12px;
   overflow: hidden;
-  background: #000;
 }
 
-.rail__media img {
+.flow__stage {
+  --w: clamp(200px, min(24vw, calc((100svh - 380px) * 0.75)), 340px);
+  position: relative;
+  height: calc(var(--w) * 4 / 3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  perspective: 1400px;
+}
+
+.flow__card {
+  position: absolute;
+  top: 0;
+  left: calc(50% - var(--w) / 2);
+  width: var(--w);
+  height: 100%;
+  will-change: transform;
+}
+
+/* darkens cards the further they sit from the centre */
+.flow__card::after {
+  content: '';
   position: absolute;
   inset: 0;
+  background: #000;
+  opacity: var(--dim, 0);
+  pointer-events: none;
+}
+
+.flow__link {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #111;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.flow__link img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: translateX(calc(var(--off) * -4%)) scale(1.1);
   transition: scale 700ms var(--ease-out);
 }
 
-.rail__overlay {
+.flow__overlay {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 16px;
-  padding: 24px;
+  gap: 14px;
+  padding: 22px;
   background: rgb(0 0 0 / 0.62);
-  backdrop-filter: blur(2px);
   opacity: 0;
   transition: opacity 300ms var(--ease-out);
 }
 
-.rail__overlay p {
+.flow__overlay p {
   font-size: 15px;
   line-height: 1.5;
-  color: var(--ink);
   transform: translateY(10px);
   transition: transform 400ms var(--ease-out);
 }
 
-.rail__cta {
+.flow__cta {
   font-size: 12px;
-  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   transform: translateY(10px);
   transition: transform 400ms var(--ease-out) 40ms;
 }
 
-.rail__info {
+@media (hover: hover) and (pointer: fine) {
+  .flow__card[data-active='true'] .flow__link:hover .flow__overlay {
+    opacity: 1;
+  }
+  .flow__card[data-active='true'] .flow__link:hover .flow__overlay p,
+  .flow__card[data-active='true'] .flow__link:hover .flow__cta {
+    transform: none;
+  }
+  .flow__card[data-active='true'] .flow__link:hover img {
+    scale: 1.03;
+  }
+  .flow__btn:not(:disabled):hover {
+    background: var(--ink);
+    color: var(--bg);
+  }
+}
+
+.flow__info {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+  text-align: center;
+}
+
+.flow__text {
   display: grid;
   gap: 8px;
-  padding-inline: 6px;
-  justify-items: start;
+  justify-items: center;
+  animation: rise 450ms var(--ease-out) both;
 }
 
-.rail__count {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
+.flow__count {
   font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  color: var(--muted);
 }
 
-.rail__title {
-  font-size: clamp(20px, 1.8vw, 26px);
+.flow__title {
+  font-size: clamp(22px, 2.2vw, 30px);
   letter-spacing: -0.03em;
   line-height: 1.1;
 }
 
-.rail__summary {
-  display: none;
-  color: var(--muted);
-  font-size: 14px;
+.flow__btn {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--ink);
+  font-size: 18px;
+  cursor: pointer;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    transform 160ms var(--ease-out);
+}
+
+.flow__btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.flow__btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+@media (max-width: 760px) {
+  .flow__stage {
+    --w: clamp(190px, min(60vw, calc((100svh - 400px) * 0.75)), 320px);
+  }
+  .flow__info {
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    gap: 10px;
+  }
+  .flow__btn {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 .tags {
@@ -754,42 +788,6 @@ ol {
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   color: var(--muted);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .rail__link:hover .rail__overlay,
-  .rail__link:focus-visible .rail__overlay {
-    opacity: 1;
-  }
-  .rail__link:hover .rail__overlay p,
-  .rail__link:hover .rail__cta {
-    transform: none;
-  }
-  .rail__link:hover {
-    border-color: var(--line-strong);
-  }
-  .rail__link:hover .rail__media img {
-    scale: 1.03;
-  }
-}
-
-/* touch screens can't hover: show the description under the title instead */
-@media (hover: none) {
-  .rail__overlay {
-    display: none;
-  }
-  .rail__summary {
-    display: block;
-  }
-}
-
-@media (max-width: 860px) {
-  .rail__card {
-    flex-basis: 78vw;
-  }
-  .rail__media {
-    aspect-ratio: 4 / 4.4;
-  }
 }
 
 /* ---------- Experience ---------- */

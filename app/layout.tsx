@@ -32,11 +32,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        {/* RH chamber photo, heavily darkened, behind the whole site */}
+        {/* first project's photo, heavily darkened, behind the whole site */}
         <div
           className="backdrop"
           aria-hidden="true"
-          style={{ backgroundImage: `url(${asset(projects.find((p) => p.slug === 'rh-chamber')!.cover.src)})` }}
+          style={{ backgroundImage: `url(${asset(projects[0].cover.src)})` }}
         />
         <a href="#main" className="skip">
           Skip to content

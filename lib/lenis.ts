@@ -7,6 +7,8 @@ export const setLenis = (l: Lenis | null) => {
   instance = l
 }
 
+export const getLenis = () => instance
+
 export const NAV_OFFSET = -72
 
 export function scrollToId(id: string) {
