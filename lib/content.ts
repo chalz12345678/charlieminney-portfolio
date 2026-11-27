@@ -6,7 +6,7 @@ export const profile = {
   role: 'Mechanical Engineer',
   location: 'Boston, MA',
   intro:
-    "I'm an engineer who enjoys using my passions for engineering, design, and programming to construct technology that makes an impact.",
+    "I'm an engineer with a master's in mechatronics. I've come to love human-centered design, especially figuring out how robots can help people.",
   email: 'minney.c@northeastern.edu',
   linkedin: 'https://www.linkedin.com/in/charlie-minney/',
   resume:
