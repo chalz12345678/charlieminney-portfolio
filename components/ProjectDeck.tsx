@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import { asset } from '@/lib/asset'
 import type { Project } from '@/lib/content'
+import { NAV_OFFSET } from '@/lib/lenis'
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
@@ -38,6 +39,9 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       slide = Math.max(0, row.scrollWidth - row.clientWidth)
       deal = window.innerHeight * 1.1
       el.style.height = `${window.innerHeight + deal + slide}px`
+      // jump target for "View projects": the point where every card is dealt
+      const dealt = el.querySelector<HTMLElement>('#work-cards')
+      if (dealt) dealt.style.top = `${deal - NAV_OFFSET}px`
       update()
     }
 
@@ -77,6 +81,7 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
 
   return (
     <div className="rail" ref={root}>
+      <span id="work-cards" className="rail__mark" aria-hidden="true" />
       <div className="rail__sticky">
         <div className="wrap">
           <div className="section__head">

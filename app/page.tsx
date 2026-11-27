@@ -36,7 +36,7 @@ export default function Home() {
               {profile.intro}
             </p>
             <div className="actions hero__actions" style={i(4)}>
-              <SectionLink id="work" className="btn">
+              <SectionLink id="work-cards" className="btn">
                 View projects
               </SectionLink>
               <a className="btn btn--ghost" href={profile.resume} target="_blank" rel="noreferrer">

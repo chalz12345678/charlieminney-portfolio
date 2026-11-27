@@ -594,6 +594,16 @@ ol {
 }
 
 /* ---------- Projects rail (pinned, scrolls sideways) ---------- */
+.rail {
+  position: relative;
+}
+
+.rail__mark {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 .rail__track {
   --x: 0px;
   display: flex;
