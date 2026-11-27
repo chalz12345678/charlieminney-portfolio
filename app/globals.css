@@ -718,7 +718,13 @@ ol {
 }
 
 .rail__count {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
   font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .rail__title {

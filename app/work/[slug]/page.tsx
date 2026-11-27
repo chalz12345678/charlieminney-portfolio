@@ -41,7 +41,7 @@ export default async function ProjectPage({ params }: Props) {
           <span className="mono">All projects</span>
         </SectionLink>
         <p className="mono muted" style={{ '--i': 0 } as React.CSSProperties}>
-          Project {pad(index + 1)} / {pad(projects.length)}
+          Project {pad(index + 1)} / {pad(projects.length)} · <span className="accent">{p.context}</span>
         </p>
         <h1 style={{ '--i': 1 } as React.CSSProperties}>
           {p.title}

@@ -107,8 +107,11 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
                 </div>
                 <div className="rail__info">
                   <span className="mono rail__count">
-                    <span className="accent">{pad(n + 1)}</span>
-                    <span className="muted"> / {pad(projects.length)}</span>
+                    <span>
+                      <span className="accent">{pad(n + 1)}</span>
+                      <span className="muted"> / {pad(projects.length)}</span>
+                    </span>
+                    <span className="muted">{p.context}</span>
                   </span>
                   <h3 className="rail__title">{p.title}</h3>
                   <p className="rail__summary">{p.summary}</p>

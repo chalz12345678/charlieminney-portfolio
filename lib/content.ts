@@ -25,6 +25,8 @@ export type Pair = { title: string; text: string }
 export type Project = {
   slug: string
   title: string
+  // what the project was part of, shown on its card and page
+  context: string
   summary: string
   tags: string[]
   facts: { label: string; value: string }[]
@@ -48,7 +50,71 @@ const img = (slug: string, file: string, alt: string, caption?: string): Image =
 
 export const projects: Project[] = [
   {
+    slug: 'waam-powder-feeder',
+    context: 'Undergrad capstone',
+    title: 'WAAM Powder Feeder',
+    summary:
+      'A powder feeder that mounts on the robotic arm of a wire-arc additive manufacturing (WAAM) machine and feeds ceramic powder into the melt pool, so metal matrix composites can be printed.',
+    tags: ['ESP32', 'Arduino', 'Stepper control', 'Testing'],
+    facts: [
+      { label: 'Context', value: 'Northeastern capstone, team of 6, 2025' },
+      { label: 'My role', value: 'Electronics, code, WAAM testing' },
+      { label: 'Control', value: 'ESP32 + DRV8825, Wi-Fi web page' },
+      { label: 'Result', value: 'Consistent powder line on the WAAM' },
+    ],
+    cover: img('waam-powder-feeder', '01.jpg', 'The powder feeder mounted on the WAAM robot arm next to the weld torch'),
+    overview:
+      "This was my undergrad capstone at Northeastern, built with a team of six for the WAAM research lab on the Burlington campus. Wire-arc additive manufacturing uses a welding arc to melt wire and print large metal parts, but on its own it can't make metal matrix composites, which are metals reinforced with ceramic particles. Our goal was to build a powder feeder that mounts on the robot arm and drops ceramic powder into the melt pool while it prints. Powder falls from a stainless steel hopper through a sliding gate, gets pushed along at a steady rate by a metal 3D printed auger screw, and slides down a copper tube to a ceramic nozzle next to the arc. I was in charge of the electronics and the code that runs the motor, and I was part of the final test on the WAAM in Burlington.",
+    challenges: [
+      {
+        title: 'Weak Motor',
+        text: "Our first prototype used a DC motor, which didn't have the strength or the speed control to turn the auger smoothly at only a few RPM.",
+      },
+      {
+        title: 'Control From Outside the Cell',
+        text: 'The powder needs to start and stop with the print, but the feeder rides on a moving robot arm inside a closed WAAM cell, so there is nowhere to put a control box.',
+      },
+      {
+        title: 'Clogging',
+        text: 'In our first powder tests, the powder clumped and clogged at several points along its path.',
+      },
+      {
+        title: 'Power and Heat',
+        text: "The stepper driver overheated after about two minutes without air cooling, and the power supply we bought couldn't run the stepper, the ESP32, and the vibration motors all at once.",
+      },
+    ],
+    solutions: [
+      {
+        title: 'Stepper Motor and ESP32',
+        text: 'We upgraded to a stepper motor, and I built the electronics to drive it with a DRV8825 driver and an ESP32. With 1/16 microstepping, the screw turns smoothly even at very low speeds, and because the speed comes from the step timing in the code, it stays constant no matter how much powder is in the chamber.',
+      },
+      {
+        title: 'Wi-Fi Control Page',
+        text: 'I programmed the ESP32 to host its own Wi-Fi network and serve a simple control page. Anyone can connect from their phone and set the speed with a slider from 0 to 20 RPM, switch direction, or stop the motor, with no app to install and no wires running out of the cell.',
+      },
+      {
+        title: 'Vibration Motors',
+        text: 'We stuck small vibrating coin motors onto the hopper exit, the metering chamber, the chamber exit, and the transport tube, and I wired them into the system. The vibration kept the powder moving and made the flow noticeably more consistent, which let us build a calibration curve between gate opening and flow rate.',
+      },
+      {
+        title: 'Workarounds and Handoff',
+        text: 'For testing, we kept the driver air cooled and split the power across two supplies. Since the lab is taking over the feeder, I wrote down what I would change next: a higher-current motor driver, one power supply sized for everything, and moving the breadboard wiring onto a soldered protoboard.',
+      },
+    ],
+    gallery: [
+      img('waam-powder-feeder', '02.jpg', 'Section view CAD of the full powder path', 'A section view of the full powder path, from the hopper and sliding gate, through the auger, down to the nozzle.'),
+      img('waam-powder-feeder', '03.jpg', 'Pink 3D printed housing with the metal auger screw', 'The metering chamber with the final metal 3D printed auger screw.'),
+      img('waam-powder-feeder', '04.jpg', 'Breadboard wiring for the ESP32, stepper driver, and vibration motors', 'The electronics: an ESP32, a DRV8825 stepper driver, and the vibration motors, all wired up on a breadboard.'),
+      img('waam-powder-feeder', '05.jpg', 'Phone control page with forward, reverse, stop, and a speed slider', 'The control page the ESP32 serves over its own Wi-Fi network.'),
+      img('waam-powder-feeder', '06.jpg', 'Flow test setup in the fume hood with the feeder over a scale', 'Our flow rate test setup in the fume hood, with the feeder running into a scale.'),
+      img('waam-powder-feeder', '07.jpg', 'Chart of flow rate against gate opening with 4 vibration motors', 'The calibration curve from our testing: flow rate vs. gate opening with 4 vibration motors.'),
+      img('waam-powder-feeder', '08.jpg', 'A line of powder deposited on a steel plate in the WAAM cell', 'Our final test in Burlington, where the feeder laid down a consistent line of powder.'),
+      img('waam-powder-feeder', '09.jpg', 'The feeder mounted on the WAAM robot arm', 'The feeder mounted on the WAAM robot arm with our custom bracket.'),
+    ],
+  },
+  {
     slug: 'rh-chamber',
+    context: 'E Ink co-op',
     title: 'RH Chamber',
     summary:
       'A temperature and humidity controlled chamber which allows the user to precisely adjust temperature and humidity using PID parameters.',
@@ -105,6 +171,7 @@ export const projects: Project[] = [
   },
   {
     slug: 'rocket-test-stand',
+    context: 'Class project',
     title: 'Rocket Engine Test Stand',
     summary:
       'Designed and sourced a rocket engine test stand for NUAero club that can withstand hotfires from a 500lbf engine. Performed analysis on all critical components to ensure sufficient safety factors.',
@@ -165,6 +232,7 @@ export const projects: Project[] = [
   },
   {
     slug: 'haptic-shirt',
+    context: 'High school senior thesis',
     title: 'Haptic Feedback Shirt',
     summary:
       'The shirt uses vibrating coin motors and ultrasonic distance sensors to assist visually impaired individuals in foreign indoor settings.',
@@ -206,6 +274,7 @@ export const projects: Project[] = [
   },
   {
     slug: 'combat-robot',
+    context: 'Extracurricular club',
     title: 'Combat Robot',
     summary:
       "An antweight combat robot with a powerful horizontal spinner and four-wheel drive. The design ended up winning our university's antweight division title!",
@@ -259,6 +328,7 @@ export const projects: Project[] = [
   },
   {
     slug: '3d-printing',
+    context: 'Just for fun',
     title: 'Smaller Design and 3D Printing Projects',
     summary:
       'Two smaller design projects in one place: a 3D printed earring rack, and an ultralight mouse shell built around an existing mouse PCB.',
