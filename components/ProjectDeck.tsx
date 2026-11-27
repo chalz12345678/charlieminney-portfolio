@@ -30,6 +30,7 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
     let idle = 0
     let heading: number | null = null // card a click or arrow key is gliding to
     let headingTimer = 0
+    let dragging = false // finger is dragging the cards sideways
 
     const scrolled = () => -el.getBoundingClientRect().top
     const pinned = () => {
@@ -67,26 +68,37 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       }
     }
 
-    const go = (i: number) => {
+    type Glide = { duration?: number; easing?: (t: number) => number; force?: boolean }
+    const inOut = (t: number) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2)
+
+    const go = (i: number, opts: Glide = {}) => {
       // one glide at a time: presses while a card is still moving are ignored
-      if (heading !== null) return
+      if (heading !== null && !opts.force) return
       const to = clamp(i, 0, n - 1)
-      if (to === Math.round(scrolled() / step) && Math.abs(scrolled() / step - to) < 0.02) return
+      const p = scrolled() / step
+      if (to === Math.round(p) && Math.abs(p - to) < 0.02) return
       const target = el.getBoundingClientRect().top + window.scrollY + to * step
-      const dist = Math.abs(to - scrolled() / step)
-      const duration = Math.min(1.2, 0.5 + dist * 0.15) // longer for longer trips
+      const duration = opts.duration ?? Math.min(1.2, 0.5 + Math.abs(to - p) * 0.15) // longer for longer trips
       // remember where we're headed so the settle-on-nearest snap can't hijack the glide
       heading = to
       clearTimeout(headingTimer)
       headingTimer = window.setTimeout(() => (heading = null), duration * 1000 + 200)
       const lenis = getLenis()
       if (lenis)
-        lenis.scrollTo(target, {
-          duration,
-          easing: (t) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2),
-          onComplete: () => (heading = null),
-        })
+        lenis.scrollTo(target, { duration, easing: opts.easing ?? inOut, force: true, onComplete: () => (heading = null) })
       else window.scrollTo({ top: target, behavior: 'smooth' })
+    }
+
+    // how far a finger or trackpad has to travel to move one card: the distance
+    // between the centre card and the first side card, so cards track 1:1
+    const spacing = () => cards[0].offsetWidth * (window.innerWidth < 700 ? 0.78 : 1.09)
+
+    // jump straight to a position (in cards) with no easing, for direct dragging
+    const setPos = (pos: number) => {
+      const y = el.getBoundingClientRect().top + window.scrollY + clamp(pos, 0, n - 1) * step
+      const lenis = getLenis()
+      if (lenis) lenis.scrollTo(y, { immediate: true, force: true })
+      else window.scrollTo(0, y)
     }
     goTo.current = go
 
@@ -106,7 +118,7 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       // settle on the nearest card once scrolling stops
       clearTimeout(idle)
       idle = window.setTimeout(() => {
-        if (!pinned() || heading !== null) return
+        if (!pinned() || heading !== null || dragging) return
         const p = scrolled() / step
         if (Math.abs(p - Math.round(p)) > 0.02) go(Math.round(p))
       }, 180)
@@ -119,44 +131,71 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       go((heading ?? current) + (e.key === 'ArrowRight' ? 1 : -1))
     }
 
-    // sideways trackpad swipe: one card per swipe gesture
-    let swipeX = 0
-    let lastWheel = 0
-    let stepped = false
+    // sideways trackpad swipe: cards follow the fingers, then settle on the nearest one
     const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || !pinned()) return
       e.preventDefault() // also stops the browser's swipe-to-go-back
-      e.stopPropagation() // keep the swipe's small vertical drift from reaching smooth scroll and cancelling the glide
-      const now = performance.now()
-      if (now - lastWheel > 220) {
-        swipeX = 0 // a pause means a new swipe
-        stepped = false
-      }
-      lastWheel = now
-      swipeX += e.deltaX
-      if (!stepped && Math.abs(swipeX) > 40) {
-        stepped = true
-        go((heading ?? current) + (swipeX > 0 ? 1 : -1))
-      }
+      e.stopPropagation() // keep the swipe's small vertical drift away from smooth scroll
+      heading = null // the user takes over from any glide in progress
+      setPos(scrolled() / step + e.deltaX / spacing())
     }
 
-    // sideways finger swipe on touch screens
-    let touchX = 0
-    let touchY = 0
+    // sideways finger drag: cards follow the finger 1:1, and a flick carries on with momentum
+    let startX = 0
+    let startY = 0
+    let startPos = 0
+    let axis: 'x' | 'y' | null = null
+    let samples: { t: number; x: number }[] = []
     const onTouchStart = (e: TouchEvent) => {
-      touchX = e.touches[0].clientX
-      touchY = e.touches[0].clientY
+      axis = null
+      if (!pinned()) return
+      startX = e.touches[0].clientX
+      startY = e.touches[0].clientY
+      startPos = scrolled() / step
+      samples = [{ t: performance.now(), x: startX }]
     }
-    const onTouchEnd = (e: TouchEvent) => {
-      const dx = e.changedTouches[0].clientX - touchX
-      const dy = e.changedTouches[0].clientY - touchY
-      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) go((heading ?? current) + (dx < 0 ? 1 : -1))
+    const onTouchMove = (e: TouchEvent) => {
+      if (!samples.length) return
+      const x = e.touches[0].clientX
+      const dx = x - startX
+      const dy = e.touches[0].clientY - startY
+      if (!axis) {
+        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return
+        axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y' // lock to whichever way the finger first moves
+        if (axis === 'x') {
+          heading = null
+          dragging = true
+        }
+      }
+      if (axis !== 'x') return
+      e.preventDefault() // keep the page still while dragging sideways
+      setPos(startPos - dx / spacing())
+      const now = performance.now()
+      samples.push({ t: now, x })
+      samples = samples.filter((s) => now - s.t < 100)
+    }
+    const onTouchEnd = () => {
+      const wasX = axis === 'x'
+      axis = null
+      dragging = false
+      if (!wasX || samples.length < 1) return (samples = [])
+      const first = samples[0]
+      const last = samples[samples.length - 1]
+      const v = last.t > first.t ? (last.x - first.x) / (last.t - first.t) : 0 // px per ms
+      samples = []
+      const pos = scrolled() / step
+      // project the flick forward, then settle on that card (at most one card past where you let go)
+      const projected = pos - (v * 200) / spacing()
+      const to = clamp(Math.round(projected), Math.floor(pos) - 1, Math.ceil(pos) + 1)
+      go(to, { force: true, duration: 0.45 + Math.min(0.4, Math.abs(to - pos) * 0.2), easing: (t) => 1 - (1 - t) ** 3 })
     }
 
     measure()
     el.addEventListener('wheel', onWheel, { passive: false })
     row.addEventListener('touchstart', onTouchStart, { passive: true })
+    row.addEventListener('touchmove', onTouchMove, { passive: false })
     row.addEventListener('touchend', onTouchEnd, { passive: true })
+    row.addEventListener('touchcancel', onTouchEnd, { passive: true })
     document.fonts?.ready.then(measure) // text height can change once the font loads
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', measure)
@@ -168,7 +207,9 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       window.removeEventListener('keydown', onKey)
       el.removeEventListener('wheel', onWheel)
       row.removeEventListener('touchstart', onTouchStart)
+      row.removeEventListener('touchmove', onTouchMove)
       row.removeEventListener('touchend', onTouchEnd)
+      row.removeEventListener('touchcancel', onTouchEnd)
       cancelAnimationFrame(frame)
       clearTimeout(idle)
       clearTimeout(headingTimer)
