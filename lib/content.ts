@@ -463,16 +463,27 @@ export const skills = [
 ]
 
 export const artwork = {
-  intro: "Some of the digital and non digital art I've done over the years.",
+  title: 'Art & Photography',
+  intro: "Some of the digital and non digital art I've done over the years, mixed in with my wildlife photography.",
+  // drawings and paintings alternate with photos
   pieces: [
     { src: '/images/artwork/01.jpg', alt: 'Portrait drawing of a dog' },
+    { src: '/images/photography/01.jpg', alt: 'Photo of two ducklings swimming near the shore' },
     { src: '/images/artwork/02.jpg', alt: 'Pencil drawing of an elephant holding an umbrella' },
+    { src: '/images/photography/02.jpg', alt: 'Photo of a small bird silhouetted on a mossy branch' },
     { src: '/images/artwork/03.jpg', alt: 'Charcoal still life of a skate, bottle and soccer ball' },
+    { src: '/images/photography/03.jpg', alt: 'Photo of a chipmunk peeking out from behind a tree trunk' },
     { src: '/images/artwork/04.jpg', alt: 'Two painted portraits of a chocolate labrador' },
+    { src: '/images/photography/04.jpg', alt: 'Photo of a toad among bark and wood chips' },
     { src: '/images/artwork/05.jpg', alt: 'Digital painting of a mushroom on a bench' },
+    { src: '/images/photography/05.jpg', alt: 'Photo of a dragonfly perched on a twig' },
     { src: '/images/artwork/06.jpg', alt: 'Drawing of a bird on a branch with berries' },
+    { src: '/images/photography/06.jpg', alt: 'Photo of a bumblebee flying toward purple anemone flowers' },
     { src: '/images/artwork/07.jpg', alt: 'Painting of a sea turtle under sunbeams' },
+    { src: '/images/photography/07.jpg', alt: 'Photo of a seagull silhouetted on the beach at sunset' },
     { src: '/images/artwork/08.jpg', alt: 'Watercolour of a tree reflected in water' },
+    { src: '/images/photography/08.jpg', alt: 'Photo of a great blue heron resting in a pine tree' },
     { src: '/images/artwork/09.jpg', alt: 'Painting of a narwhal in deep blue water' },
+    { src: '/images/photography/09.jpg', alt: 'Photo of a hawk spreading its wings among autumn leaves' },
   ] as Image[],
 }

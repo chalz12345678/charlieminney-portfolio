@@ -5,7 +5,7 @@ import Contact from '@/components/Contact'
 import SmoothScroll from '@/components/SmoothScroll'
 import ScrollFx from '@/components/ScrollFx'
 import { asset } from '@/lib/asset'
-import { profile, projects } from '@/lib/content'
+import { profile } from '@/lib/content'
 import './globals.css'
 
 const sans = Geist({ subsets: ['latin'], variable: '--font-sans' })
@@ -32,11 +32,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        {/* first project's photo, heavily darkened, behind the whole site */}
+        {/* first project's photo, pre-blurred and darkened (public/images/backdrop.jpg), behind the whole site */}
         <div
           className="backdrop"
           aria-hidden="true"
-          style={{ backgroundImage: `url(${asset(projects[0].cover.src)})` }}
+          style={{ backgroundImage: `url(${asset('/images/backdrop.jpg')})` }}
         />
         <a href="#main" className="skip">
           Skip to content

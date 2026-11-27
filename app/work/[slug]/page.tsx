@@ -173,7 +173,7 @@ export default async function ProjectPage({ params }: Props) {
         ) : (
           <Link href="/art/" className="pager__link pager__link--next">
             <span className="mono muted">Next →</span>
-            <span className="pager__title">Artwork</span>
+            <span className="pager__title">Art &amp; Photography</span>
           </Link>
         )}
       </nav>

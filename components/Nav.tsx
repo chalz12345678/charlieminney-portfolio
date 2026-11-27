@@ -12,7 +12,7 @@ const links: Item[] = [
   { id: 'work', label: 'Projects' },
   { id: 'experience', label: 'Experience' },
   { id: 'about', label: 'About' },
-  { href: '/art/', label: 'Art' },
+  { href: '/art/', label: 'Art & Photography' },
   { id: 'contact', label: 'Contact' },
 ]
 

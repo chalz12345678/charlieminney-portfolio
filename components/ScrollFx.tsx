@@ -38,21 +38,29 @@ export default function ScrollFx() {
     const speeds = [...document.querySelectorAll<HTMLElement>('[data-speed]')]
     const drifts = [...document.querySelectorAll<HTMLElement>('[data-drift]')]
     let frame = 0
+    let lastDrift = -1
     const update = () => {
       frame = 0
       const y = window.scrollY
       const vh = window.innerHeight
+      // read every position first, then write, so the browser lays out once per frame
+      const moves: [HTMLElement, string][] = []
       for (const el of speeds) {
         // offset from the parent's distance to the viewport centre, so it works anywhere on the page
         const r = (el.parentElement ?? el).getBoundingClientRect()
         if (r.bottom < -vh || r.top > vh * 2) continue
         const fromCentre = r.top + r.height / 2 - vh / 2
-        el.style.setProperty('--py', `${(-fromCentre * Number(el.dataset.speed)).toFixed(1)}px`)
+        moves.push([el, `${(-fromCentre * Number(el.dataset.speed)).toFixed(1)}px`])
       }
-      const p = Math.min(1, y / vh)
-      for (const el of drifts) {
-        el.style.setProperty('--dx', `${(p * 18 * Number(el.dataset.drift)).toFixed(2)}vw`)
-        el.style.setProperty('--fade', (1 - p * 0.9).toFixed(3))
+      for (const [el, v] of moves) el.style.setProperty('--py', v)
+      // the hero name drift only changes inside the first screen; skip it everywhere else
+      const p = Math.round(Math.min(1, y / vh) * 1000) / 1000
+      if (p !== lastDrift) {
+        lastDrift = p
+        for (const el of drifts) {
+          el.style.setProperty('--dx', `${(p * 18 * Number(el.dataset.drift)).toFixed(2)}vw`)
+          el.style.setProperty('--fade', (1 - p * 0.9).toFixed(3))
+        }
       }
     }
     const onScroll = () => {

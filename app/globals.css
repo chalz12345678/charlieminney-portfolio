@@ -47,7 +47,8 @@ body {
   z-index: -1;
   background-size: cover;
   background-position: center;
-  filter: blur(6px) saturate(0.5) brightness(0.32);
+  /* the blur and darkening are baked into the image file (public/images/backdrop.jpg),
+     so phones don't have to run a full-screen blur filter */
   opacity: 0.45;
   pointer-events: none;
 }
@@ -214,6 +215,15 @@ ol {
 }
 
 /* ---------- Nav ---------- */
+/* live blur behind the header is costly on phones while scrolling: use a solid bar there */
+@media (hover: none) {
+  .nav {
+    background: color-mix(in srgb, var(--bg) 94%, transparent) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
 .nav {
   position: fixed;
   inset: 0 0 auto;

@@ -108,7 +108,7 @@ export default function Home() {
               </p>
             ))}
             <Link href="/art/" className="link about__art">
-              See my artwork <span aria-hidden="true">→</span>
+              See my art &amp; photography <span aria-hidden="true">→</span>
             </Link>
           </div>
         </div>

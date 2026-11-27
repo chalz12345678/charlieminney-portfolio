@@ -25,30 +25,40 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
     if (!el || !row) return
     const cards = [...row.querySelectorAll<HTMLElement>('.flow__card')]
     let step = 0 // scroll distance between two cards
+    let top = 0 // the section's page offset, cached so scrolling never forces a layout read
+    let w = 0 // card width, cached for the same reason
+    let narrow = false
+    let lastW = 0
+    let lastH = 0
     let current = 0
     let frame = 0
     let idle = 0
-    let heading: number | null = null // card a click or arrow key is gliding to
+    let heading: number | null = null // card a click, key or swipe is gliding to
     let headingTimer = 0
-    let dragging = false // finger is dragging the cards sideways
+    // Visual offset (in cards) added on top of the scroll position. A finger drag moves
+    // only this, never the page scroll, so it can't fight the phone's own touch scrolling.
+    let offset = 0
+    let dragging = false
+    let tween = 0
 
-    const scrolled = () => -el.getBoundingClientRect().top
+    const scrolled = () => window.scrollY - top
     const pinned = () => {
-      const r = el.getBoundingClientRect()
-      return r.top <= 2 && r.bottom >= window.innerHeight - 2
+      const s = scrolled()
+      return s >= -2 && s <= step * (n - 1) + 2
     }
 
     const update = () => {
       frame = 0
-      const p = clamp(scrolled() / step, 0, n - 1)
-      const w = cards[0].offsetWidth
+      const raw = scrolled() / step + offset
+      // rubber-band a little past the first and last card while dragging
+      const p = raw < 0 ? raw * 0.3 : raw > n - 1 ? n - 1 + (raw - n + 1) * 0.3 : raw
+      const pos = clamp(p, -0.4, n - 0.6)
       // measured from the reference: first side card ~1.1 widths out, the rest
       // peek out ~0.23 widths each; tighter on phones so a slice of each side shows
-      const narrow = window.innerWidth < 700
       const gapNear = narrow ? 0.78 : 1.09
       const gapFar = narrow ? 0.12 : 0.23
       cards.forEach((card, i) => {
-        const d = i - p
+        const d = i - pos
         const a = Math.abs(d)
         const s = Math.sign(d)
         const near = Math.min(a, 1) // 0 at centre, 1 once it's the first side card
@@ -61,15 +71,26 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
         card.style.setProperty('--dim', Math.min(0.92, near * 0.08 + far * 0.3).toFixed(3))
         card.style.opacity = String(clamp(4.5 - a, 0, 1))
       })
-      const idx = Math.round(p)
+      const idx = clamp(Math.round(pos), 0, n - 1)
       if (idx !== current) {
         current = idx
         setActive(idx)
       }
     }
+    const requestUpdate = () => {
+      if (!frame) frame = requestAnimationFrame(update)
+    }
 
     type Glide = { duration?: number; easing?: (t: number) => number; force?: boolean }
     const inOut = (t: number) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2)
+    const out = (t: number) => 1 - (1 - t) ** 3
+
+    const lock = (to: number, seconds: number) => {
+      // remember where we're headed so the settle-on-nearest snap can't hijack the glide
+      heading = to
+      clearTimeout(headingTimer)
+      headingTimer = window.setTimeout(() => (heading = null), seconds * 1000 + 200)
+    }
 
     const go = (i: number, opts: Glide = {}) => {
       // one glide at a time: presses while a card is still moving are ignored
@@ -77,44 +98,47 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       const to = clamp(i, 0, n - 1)
       const p = scrolled() / step
       if (to === Math.round(p) && Math.abs(p - to) < 0.02) return
-      const target = el.getBoundingClientRect().top + window.scrollY + to * step
       const duration = opts.duration ?? Math.min(1.2, 0.5 + Math.abs(to - p) * 0.15) // longer for longer trips
-      // remember where we're headed so the settle-on-nearest snap can't hijack the glide
-      heading = to
-      clearTimeout(headingTimer)
-      headingTimer = window.setTimeout(() => (heading = null), duration * 1000 + 200)
+      lock(to, duration)
+      const target = top + to * step
       const lenis = getLenis()
-      if (lenis)
-        lenis.scrollTo(target, { duration, easing: opts.easing ?? inOut, force: true, onComplete: () => (heading = null) })
+      if (lenis) lenis.scrollTo(target, { duration, easing: opts.easing ?? inOut, force: true, onComplete: () => (heading = null) })
       else window.scrollTo({ top: target, behavior: 'smooth' })
-    }
-
-    // how far a finger or trackpad has to travel to move one card: the distance
-    // between the centre card and the first side card, so cards track 1:1
-    const spacing = () => cards[0].offsetWidth * (window.innerWidth < 700 ? 0.78 : 1.09)
-
-    // jump straight to a position (in cards) with no easing, for direct dragging
-    const setPos = (pos: number) => {
-      const y = el.getBoundingClientRect().top + window.scrollY + clamp(pos, 0, n - 1) * step
-      const lenis = getLenis()
-      if (lenis) lenis.scrollTo(y, { immediate: true, force: true })
-      else window.scrollTo(0, y)
     }
     goTo.current = go
 
+    // how far a finger or trackpad has to travel to move one card: the distance
+    // between the centre card and the first side card, so cards track 1:1
+    const spacing = () => w * (narrow ? 0.78 : 1.09)
+
     const measure = () => {
+      // phones fire resize whenever the address bar slides in or out; re-measuring then
+      // would jump the page mid-scroll, so only react to real size changes
+      const vw = window.innerWidth
+      const vh = window.innerHeight
+      if (lastW && vw === lastW && Math.abs(vh - lastH) < 160) return
+      lastW = vw
+      lastH = vh
+      narrow = vw < 700
       // every card as tall as the tallest one's content, so no text gets cut off
       cards.forEach((c) => (c.style.height = ''))
       const h = Math.max(...cards.map((c) => c.offsetHeight))
       cards.forEach((c) => (c.style.height = `${h}px`))
       row.style.height = `${h}px`
-      step = Math.round(window.innerHeight * 0.5)
-      el.style.height = `${window.innerHeight + step * (n - 1)}px`
+      w = cards[0].offsetWidth
+      step = Math.round(vh * 0.5)
+      el.style.height = `${vh + step * (n - 1)}px`
+      top = el.getBoundingClientRect().top + window.scrollY
       update()
     }
+    // content above (fonts, the experience accordion) can move the section; keep `top` fresh
+    const ro = new ResizeObserver(() => {
+      top = el.getBoundingClientRect().top + window.scrollY
+    })
+    ro.observe(document.body)
 
     const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(update)
+      requestUpdate()
       // settle on the nearest card once scrolling stops
       clearTimeout(idle)
       idle = window.setTimeout(() => {
@@ -137,7 +161,10 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       e.preventDefault() // also stops the browser's swipe-to-go-back
       e.stopPropagation() // keep the swipe's small vertical drift away from smooth scroll
       heading = null // the user takes over from any glide in progress
-      setPos(scrolled() / step + e.deltaX / spacing())
+      const y = top + clamp(scrolled() / step + e.deltaX / spacing(), 0, n - 1) * step
+      const lenis = getLenis()
+      if (lenis) lenis.scrollTo(y, { immediate: true, force: true })
+      else window.scrollTo(0, y)
     }
 
     // sideways finger drag: cards follow the finger 1:1, and a flick carries on with momentum
@@ -148,10 +175,14 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
     let samples: { t: number; x: number }[] = []
     const onTouchStart = (e: TouchEvent) => {
       axis = null
-      if (!pinned()) return
+      samples = []
+      // only when the coverflow is (nearly) pinned on screen
+      const s = scrolled()
+      if (s < -60 || s > step * (n - 1) + 60) return
+      cancelAnimationFrame(tween)
       startX = e.touches[0].clientX
       startY = e.touches[0].clientY
-      startPos = scrolled() / step
+      startPos = scrolled() / step + offset // pick up exactly where the cards are now
       samples = [{ t: performance.now(), x: startX }]
     }
     const onTouchMove = (e: TouchEvent) => {
@@ -160,7 +191,7 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       const dx = x - startX
       const dy = e.touches[0].clientY - startY
       if (!axis) {
-        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return
         axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y' // lock to whichever way the finger first moves
         if (axis === 'x') {
           heading = null
@@ -168,8 +199,9 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
         }
       }
       if (axis !== 'x') return
-      e.preventDefault() // keep the page still while dragging sideways
-      setPos(startPos - dx / spacing())
+      // move the cards only; the page scroll is left alone during the drag
+      offset = startPos - dx / spacing() - scrolled() / step
+      requestUpdate()
       const now = performance.now()
       samples.push({ t: now, x })
       samples = samples.filter((s) => now - s.t < 100)
@@ -178,30 +210,55 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       const wasX = axis === 'x'
       axis = null
       dragging = false
-      if (!wasX || samples.length < 1) return (samples = [])
+      if (!wasX) return (samples = [])
       const first = samples[0]
       const last = samples[samples.length - 1]
-      const v = last.t > first.t ? (last.x - first.x) / (last.t - first.t) : 0 // px per ms
+      const v = last && first && last.t > first.t ? (last.x - first.x) / (last.t - first.t) : 0 // px per ms
       samples = []
-      const pos = scrolled() / step
-      // project the flick forward, then settle on that card (at most one card past where you let go)
+      const pos = scrolled() / step + offset
+      // project the flick forward, then settle on that card (at most one past where you let go)
       const projected = pos - (v * 200) / spacing()
-      const to = clamp(Math.round(projected), Math.floor(pos) - 1, Math.ceil(pos) + 1)
-      go(to, { force: true, duration: 0.45 + Math.min(0.4, Math.abs(to - pos) * 0.2), easing: (t) => 1 - (1 - t) ** 3 })
+      const to = clamp(clamp(Math.round(projected), Math.floor(pos) - 1, Math.ceil(pos) + 1), 0, n - 1)
+      // Move the page scroll straight to that card. The section is pinned, so this jump is
+      // invisible; then ease the visual offset down to zero so the cards glide into place.
+      const lenis = getLenis()
+      const y = top + to * step
+      if (lenis) lenis.scrollTo(y, { immediate: true, force: true })
+      else window.scrollTo(0, y)
+      offset = pos - to
+      const from = offset
+      const duration = 0.45 + Math.min(0.35, Math.abs(from) * 0.25)
+      lock(to, duration)
+      const start = performance.now()
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - start) / (duration * 1000))
+        offset = from * (1 - out(t))
+        update()
+        if (t < 1) tween = requestAnimationFrame(tick)
+        else {
+          offset = 0
+          heading = null
+        }
+      }
+      tween = requestAnimationFrame(tick)
     }
 
     measure()
+    lastW = 0 // let the font-ready pass re-measure once
+    document.fonts?.ready.then(measure) // text height can change once the font loads
     el.addEventListener('wheel', onWheel, { passive: false })
+    // passive: the browser never waits on this code before scrolling, which keeps
+    // vertical scrolling smooth; touch-action: pan-y keeps sideways drags off the page
     row.addEventListener('touchstart', onTouchStart, { passive: true })
-    row.addEventListener('touchmove', onTouchMove, { passive: false })
+    row.addEventListener('touchmove', onTouchMove, { passive: true })
     row.addEventListener('touchend', onTouchEnd, { passive: true })
     row.addEventListener('touchcancel', onTouchEnd, { passive: true })
-    document.fonts?.ready.then(measure) // text height can change once the font loads
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', measure)
     window.addEventListener('keydown', onKey)
     return () => {
       el.style.height = ''
+      ro.disconnect()
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', measure)
       window.removeEventListener('keydown', onKey)
@@ -211,6 +268,7 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       row.removeEventListener('touchend', onTouchEnd)
       row.removeEventListener('touchcancel', onTouchEnd)
       cancelAnimationFrame(frame)
+      cancelAnimationFrame(tween)
       clearTimeout(idle)
       clearTimeout(headingTimer)
     }

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { asset } from '@/lib/asset'
 import { artwork } from '@/lib/content'
 
-export const metadata: Metadata = { title: 'Artwork', description: artwork.intro }
+export const metadata: Metadata = { title: artwork.title, description: artwork.intro }
 
 export default function ArtPage() {
   return (
@@ -17,7 +17,7 @@ export default function ArtPage() {
           Outside engineering
         </p>
         <h1 style={{ '--i': 1 } as React.CSSProperties}>
-          Artwork<span className="accent">.</span>
+          {artwork.title}<span className="accent">.</span>
         </h1>
         <p className="project__summary" style={{ '--i': 2 } as React.CSSProperties}>
           {artwork.intro}
