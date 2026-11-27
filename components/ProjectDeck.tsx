@@ -28,6 +28,8 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
     let current = 0
     let frame = 0
     let idle = 0
+    let heading: number | null = null // card a click or arrow key is gliding to
+    let headingTimer = 0
 
     const scrolled = () => -el.getBoundingClientRect().top
     const pinned = () => {
@@ -66,20 +68,34 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
     }
 
     const go = (i: number) => {
-      const target = el.getBoundingClientRect().top + window.scrollY + clamp(i, 0, n - 1) * step
+      // one glide at a time: presses while a card is still moving are ignored
+      if (heading !== null) return
+      const to = clamp(i, 0, n - 1)
+      if (to === Math.round(scrolled() / step) && Math.abs(scrolled() / step - to) < 0.02) return
+      const target = el.getBoundingClientRect().top + window.scrollY + to * step
+      const dist = Math.abs(to - scrolled() / step)
+      const duration = Math.min(1.7, 1 + dist * 0.15) // longer for longer trips
+      // remember where we're headed so the settle-on-nearest snap can't hijack the glide
+      heading = to
+      clearTimeout(headingTimer)
+      headingTimer = window.setTimeout(() => (heading = null), duration * 1000 + 200)
       const lenis = getLenis()
-      const dist = Math.abs(i - scrolled() / step)
-      // slow ease in and out, longer for longer trips
       if (lenis)
         lenis.scrollTo(target, {
-          duration: Math.min(2.2, 1.3 + dist * 0.2),
-          easing: (t) => (t < 0.5 ? 8 * t ** 4 : 1 - (-2 * t + 2) ** 4 / 2),
+          duration,
+          easing: (t) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2),
+          onComplete: () => (heading = null),
         })
       else window.scrollTo({ top: target, behavior: 'smooth' })
     }
     goTo.current = go
 
     const measure = () => {
+      // every card as tall as the tallest one's content, so no text gets cut off
+      cards.forEach((c) => (c.style.height = ''))
+      const h = Math.max(...cards.map((c) => c.offsetHeight))
+      cards.forEach((c) => (c.style.height = `${h}px`))
+      row.style.height = `${h}px`
       step = Math.round(window.innerHeight * 0.5)
       el.style.height = `${window.innerHeight + step * (n - 1)}px`
       update()
@@ -90,7 +106,7 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       // settle on the nearest card once scrolling stops
       clearTimeout(idle)
       idle = window.setTimeout(() => {
-        if (!pinned()) return
+        if (!pinned() || heading !== null) return
         const p = scrolled() / step
         if (Math.abs(p - Math.round(p)) > 0.02) go(Math.round(p))
       }, 180)
@@ -100,10 +116,11 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
       if (!pinned() || (e.target as HTMLElement).closest?.('input, textarea')) return
       e.preventDefault()
-      go(current + (e.key === 'ArrowRight' ? 1 : -1))
+      go((heading ?? current) + (e.key === 'ArrowRight' ? 1 : -1))
     }
 
     measure()
+    document.fonts?.ready.then(measure) // text height can change once the font loads
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', measure)
     window.addEventListener('keydown', onKey)
@@ -114,6 +131,7 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       window.removeEventListener('keydown', onKey)
       cancelAnimationFrame(frame)
       clearTimeout(idle)
+      clearTimeout(headingTimer)
     }
   }, [n])
 
@@ -145,7 +163,7 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
                     goTo.current(i)
                   }
                 }}
-                onFocus={() => i !== active && goTo.current(i)}
+                onFocus={(e) => i !== active && e.currentTarget.matches(':focus-visible') && goTo.current(i)}
               >
                 <div className="flow__media">
                   <img src={asset(proj.cover.src)} alt={proj.cover.alt} loading={i < 3 ? 'eager' : 'lazy'} />

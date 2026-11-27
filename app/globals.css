@@ -617,9 +617,9 @@ ol {
 }
 
 .flow__stage {
-  --w: clamp(200px, min(22vw, calc((100svh - 470px) * 0.85)), 320px);
+  /* never narrower than 260px, so card text always fits */
+  --w: clamp(260px, min(22vw, calc((100svh - 470px) * 0.85)), 320px);
   position: relative;
-  height: calc(var(--w) * 1.1 + 150px);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -631,7 +631,6 @@ ol {
   top: 0;
   left: calc(50% - var(--w) / 2);
   width: var(--w);
-  height: 100%;
   will-change: transform;
 }
 
@@ -670,7 +669,6 @@ ol {
   align-content: start;
   gap: 8px;
   padding: 14px 16px 16px;
-  overflow: hidden;
 }
 
 .flow__body .flow__count {
@@ -806,7 +804,7 @@ ol {
 
 @media (max-width: 760px) {
   .flow__stage {
-    --w: clamp(190px, min(62vw, calc((100svh - 480px) * 0.85)), 300px);
+    --w: clamp(240px, min(66vw, calc((100svh - 480px) * 0.85)), 300px);
   }
   .flow__info {
     grid-template-columns: 40px minmax(0, 1fr) 40px;
@@ -833,6 +831,20 @@ ol {
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   color: var(--muted);
+}
+
+/* short windows: tighten the heading so the cards still fit */
+@media (max-height: 760px) {
+  .flow .section__head {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
+  .flow .section__head h2 {
+    font-size: 40px;
+  }
+  .flow__info {
+    margin-top: 18px;
+  }
 }
 
 /* ---------- Experience ---------- */
