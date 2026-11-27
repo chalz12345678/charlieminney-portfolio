@@ -11,7 +11,7 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
 
 // Coverflow: the section pins to the screen and scrolling down moves through
 // the projects. The centre card faces you; the rest fan back on either side.
-// While pinned, arrow keys step between cards, and clicking a side card glides it to the centre.
+// While pinned, arrow keys, sideways swipes, and clicking a side card glide it to the centre.
 export default function ProjectDeck({ projects }: { projects: Project[] }) {
   const root = useRef<HTMLDivElement>(null)
   const stage = useRef<HTMLOListElement>(null)
@@ -119,7 +119,44 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       go((heading ?? current) + (e.key === 'ArrowRight' ? 1 : -1))
     }
 
+    // sideways trackpad swipe: one card per swipe gesture
+    let swipeX = 0
+    let lastWheel = 0
+    let stepped = false
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return
+      e.preventDefault() // also stops the browser's swipe-to-go-back
+      e.stopPropagation() // keep the swipe's small vertical drift from reaching smooth scroll and cancelling the glide
+      const now = performance.now()
+      if (now - lastWheel > 220) {
+        swipeX = 0 // a pause means a new swipe
+        stepped = false
+      }
+      lastWheel = now
+      swipeX += e.deltaX
+      if (!stepped && Math.abs(swipeX) > 40) {
+        stepped = true
+        go((heading ?? current) + (swipeX > 0 ? 1 : -1))
+      }
+    }
+
+    // sideways finger swipe on touch screens
+    let touchX = 0
+    let touchY = 0
+    const onTouchStart = (e: TouchEvent) => {
+      touchX = e.touches[0].clientX
+      touchY = e.touches[0].clientY
+    }
+    const onTouchEnd = (e: TouchEvent) => {
+      const dx = e.changedTouches[0].clientX - touchX
+      const dy = e.changedTouches[0].clientY - touchY
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) go((heading ?? current) + (dx < 0 ? 1 : -1))
+    }
+
     measure()
+    el.addEventListener('wheel', onWheel, { passive: false })
+    row.addEventListener('touchstart', onTouchStart, { passive: true })
+    row.addEventListener('touchend', onTouchEnd, { passive: true })
     document.fonts?.ready.then(measure) // text height can change once the font loads
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', measure)
@@ -129,6 +166,9 @@ export default function ProjectDeck({ projects }: { projects: Project[] }) {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', measure)
       window.removeEventListener('keydown', onKey)
+      el.removeEventListener('wheel', onWheel)
+      row.removeEventListener('touchstart', onTouchStart)
+      row.removeEventListener('touchend', onTouchEnd)
       cancelAnimationFrame(frame)
       clearTimeout(idle)
       clearTimeout(headingTimer)

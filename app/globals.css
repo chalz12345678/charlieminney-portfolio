@@ -618,12 +618,14 @@ ol {
 
 .flow__stage {
   /* never narrower than 260px, so card text always fits */
-  --w: clamp(260px, min(22vw, calc((100svh - 470px) * 0.85)), 320px);
+  --w: clamp(280px, min(25vw, calc((100svh - 450px) * 0.9)), 360px);
   position: relative;
   margin: 0;
   padding: 0;
   list-style: none;
   perspective: 2600px;
+  /* sideways finger swipes go to the coverflow, up/down still scrolls the page */
+  touch-action: pan-y;
 }
 
 .flow__card {
@@ -804,7 +806,7 @@ ol {
 
 @media (max-width: 760px) {
   .flow__stage {
-    --w: clamp(240px, min(66vw, calc((100svh - 480px) * 0.85)), 300px);
+    --w: clamp(250px, min(72vw, calc((100svh - 470px) * 0.9)), 320px);
   }
   .flow__info {
     grid-template-columns: 40px minmax(0, 1fr) 40px;
